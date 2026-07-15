@@ -43,7 +43,7 @@ export function HeroCanvas() {
 
   // Map elements relative to centered 1440x1024 Figma frame
   useEffect(() => {
-    if (dimensions.width === 0) return;
+    if (dimensions.width === 0 || isInitialized) return;
 
     const baseWidth = 1440;
     const baseHeight = 1024;
@@ -53,11 +53,12 @@ export function HeroCanvas() {
     const offsetY = Math.max(0, (dimensions.height - baseHeight * currentScale) / 2);
 
     const absoluteElements = initialElementsData.map((el) => {
+      const isTab = el.type === "tab";
       return {
         id: el.id,
         type: el.type as CanvasItemType,
-        x: (el.x * currentScale) + offsetX,
-        y: (el.y * currentScale) + offsetY,
+        x: isTab ? el.x : el.x * currentScale + offsetX,
+        y: isTab ? el.y : el.y * currentScale + offsetY,
         rotation: el.rotation,
         content: el.content,
         label: el.label,
@@ -67,7 +68,7 @@ export function HeroCanvas() {
 
     setElements(absoluteElements);
     setIsInitialized(true);
-  }, [dimensions.width, dimensions.height]);
+  }, [dimensions.width, dimensions.height, isInitialized]);
 
   // Entrance Animations
   useEffect(() => {
