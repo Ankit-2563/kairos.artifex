@@ -11,11 +11,6 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://kairos-artifex.vercel.app"),
   title: "Kairos.Artifex",
   description: "A digital product studio crafting brands, websites, and experiences that create impact.",
-  icons: {
-    icon: "/icon.png",
-    shortcut: "/icon.png",
-    apple: "/icon.png",
-  },
   openGraph: {
     title: "Kairos.Artifex",
     description: "A digital product studio crafting brands, websites, and experiences that create impact.",
