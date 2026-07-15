@@ -8,6 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kairos-artifex.com"),
   title: "Kairos.Artifex",
   description: "A digital product studio crafting brands, websites, and experiences that create impact.",
 };
