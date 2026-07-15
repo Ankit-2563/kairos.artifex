@@ -12,6 +12,7 @@ interface CanvasItemProps {
   isDragged: boolean;
   collaboratorName?: string;
   collaboratorColor?: string;
+  scale?: number;
   onPointerDown: (e: React.PointerEvent, id: string) => void;
   onPointerMove: (e: React.PointerEvent, id: string) => void;
   onPointerUp: (e: React.PointerEvent, id: string) => void;
@@ -26,6 +27,7 @@ export function CanvasItem({
   isDragged,
   collaboratorName,
   collaboratorColor,
+  scale = 1,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -117,14 +119,23 @@ export function CanvasItem({
     switch (type) {
       case "word":
         return (
-          <h2 className="text-[160px] font-semibold text-[#343434] tracking-tighter leading-[0.95] select-none px-4 py-1">
+          <h2
+            className="font-semibold text-[#343434] tracking-tighter leading-[0.95] select-none px-4 py-1"
+            style={{ fontSize: `${scale * 160}px` }}
+          >
             {content as string}
           </h2>
         );
 
       case "subheading":
         return (
-          <p className="text-[#343434] font-normal text-[24px] tracking-normal leading-[1.64] text-center select-none w-141.5 max-w-full">
+          <p
+            className="text-[#343434] font-normal tracking-normal leading-[1.64] text-center select-none max-w-full"
+            style={{
+              fontSize: `${Math.max(15, scale * 24)}px`,
+              width: `${Math.max(300, scale * 566)}px`,
+            }}
+          >
             {content as string}
           </p>
         );

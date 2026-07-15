@@ -43,19 +43,21 @@ export function HeroCanvas() {
 
   // Map elements relative to centered 1440x1024 Figma frame
   useEffect(() => {
-    if (dimensions.width === 0 || isInitialized) return;
+    if (dimensions.width === 0) return;
 
     const baseWidth = 1440;
     const baseHeight = 1024;
+    const currentScale = Math.min(1, dimensions.width / baseWidth);
+    
     const offsetX = Math.max(0, (dimensions.width - baseWidth) / 2);
-    const offsetY = Math.max(0, (dimensions.height - baseHeight) / 2);
+    const offsetY = Math.max(0, (dimensions.height - baseHeight * currentScale) / 2);
 
     const absoluteElements = initialElementsData.map((el) => {
       return {
         id: el.id,
         type: el.type as CanvasItemType,
-        x: el.x + offsetX,
-        y: el.y + offsetY,
+        x: (el.x * currentScale) + offsetX,
+        y: (el.y * currentScale) + offsetY,
         rotation: el.rotation,
         content: el.content,
         label: el.label,
@@ -63,11 +65,9 @@ export function HeroCanvas() {
       };
     });
 
-    requestAnimationFrame(() => {
-      setElements(absoluteElements);
-      setIsInitialized(true);
-    });
-  }, [dimensions, isInitialized]);
+    setElements(absoluteElements);
+    setIsInitialized(true);
+  }, [dimensions.width, dimensions.height]);
 
   // Entrance Animations
   useEffect(() => {
@@ -222,6 +222,7 @@ export function HeroCanvas() {
                   isSelected={selectedId === el.id}
                   isHovered={hoveredId === el.id}
                   isDragged={draggedId === el.id}
+                  scale={dimensions.width > 0 ? Math.min(1, dimensions.width / 1440) : 1}
                   onPointerDown={(e) => handlePointerDown(e, el.id)}
                   onMouseEnter={() => setHoveredId(el.id)}
                   onMouseLeave={() => setHoveredId(null)}
