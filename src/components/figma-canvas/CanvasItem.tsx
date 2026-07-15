@@ -36,7 +36,8 @@ export function CanvasItem({
 }: CanvasItemProps) {
   const isWord = element.type === "word";
   const isSubheading = element.type === "subheading";
-  const isTextOnly = isWord || isSubheading;
+  const isTab = element.type === "tab";
+  const isTextOnly = isWord || isSubheading || isTab;
   // Inner container is used for the float effect
   const floatRef = useGsapFloat(!isDragged && !isSelected, {
     maxTranslation: isTextOnly ? 3 : 4,
@@ -138,6 +139,37 @@ export function CanvasItem({
           >
             {content as string}
           </p>
+        );
+
+      case "tab":
+        return (
+          <div
+            className="bg-white border border-[#D3D3D3] rounded-lg shadow-[1px_1px_4px_rgba(0,0,0,0.08)] flex items-center justify-between px-4 select-none"
+            style={{
+              width: `${scale * 180}px`,
+              height: `${scale * 44}px`,
+            }}
+          >
+            <span
+              className="text-black font-normal font-sans pointer-events-none select-none"
+              style={{
+                fontSize: `${scale * 14}px`,
+                lineHeight: `${scale * 17}px`,
+              }}
+            >
+              {content as string}
+            </span>
+            <img
+              src="/menu.svg"
+              alt="Menu"
+              draggable="false"
+              className="pointer-events-none select-none"
+              style={{
+                width: `${scale * 15}px`,
+                height: `${scale * 11}px`,
+              }}
+            />
+          </div>
         );
 
       default:
