@@ -7,6 +7,7 @@ import gsap from "gsap";
 
 const initialElementsData = [
   { id: "el-tab", type: "tab", x: 36, y: 36, rotation: 0, content: "Main_Kairos", label: "Frame 133", depth: 0.02 },
+  { id: "el-switch", type: "switch", x: 189.87, y: 531.61, rotation: 14.61, content: "", label: "Frame 131", depth: 0.02 },
   { id: "w-design", type: "word", x: 240, y: 160, rotation: 0, content: "Design.", label: "DESIGN", depth: 0.02 },
   { id: "w-develop", type: "word", x: 460, y: 370, rotation: 0, content: "Develop.", label: "Develop", depth: 0.02 },
   { id: "w-launch", type: "word", x: 350, y: 580, rotation: 0, content: "Launch.", label: "Launch", depth: 0.02 },
@@ -151,8 +152,8 @@ export function HeroCanvas() {
     const el = elements.find((item) => item.id === id);
     if (!el) return;
 
-    // Tab components are static and not draggable
-    if (el.type === "tab") return;
+    // Tab and Switch components are static and not draggable/selectable
+    if (el.type === "tab" || el.type === "switch") return;
 
     setDraggedId(id);
 
@@ -263,7 +264,7 @@ export function HeroCanvas() {
                 <img
                   src={col.cursorUrl}
                   alt={col.name}
-                  className="w-[28px] h-[27px] select-none"
+                  className="w-7 h-6.75 select-none"
                   draggable="false"
                 />
                 <div

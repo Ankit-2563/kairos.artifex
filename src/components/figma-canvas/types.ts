@@ -1,4 +1,4 @@
-export type CanvasItemType = "word" | "subheading" | "tab";
+export type CanvasItemType = "word" | "subheading" | "tab" | "switch";
 
 export interface CanvasElement {
   id: string;

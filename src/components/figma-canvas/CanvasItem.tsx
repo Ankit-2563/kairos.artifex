@@ -20,6 +20,32 @@ interface CanvasItemProps {
   onMouseLeave: () => void;
 }
 
+const playSwitchSound = (isOn: boolean) => {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    
+    // High frequency transient click
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(isOn ? 900 : 700, ctx.currentTime);
+
+    gain.gain.setValueAtTime(0.08, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.08);
+  } catch (error) {
+    console.error("Failed to play sound:", error);
+  }
+};
+
 export function CanvasItem({
   element,
   isSelected,
@@ -34,10 +60,12 @@ export function CanvasItem({
   onMouseEnter,
   onMouseLeave,
 }: CanvasItemProps) {
+  const [isOn, setIsOn] = useState(true);
   const isWord = element.type === "word";
   const isSubheading = element.type === "subheading";
   const isTab = element.type === "tab";
-  const isTextOnly = isWord || isSubheading || isTab;
+  const isSwitch = element.type === "switch";
+  const isTextOnly = isWord || isSubheading || isTab || isSwitch;
   // Inner container is used for the float effect
   const floatRef = useGsapFloat(!isDragged && !isSelected, {
     maxTranslation: isTextOnly ? 3 : 4,
@@ -172,6 +200,36 @@ export function CanvasItem({
           </div>
         );
 
+      case "switch":
+        return (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              const nextState = !isOn;
+              setIsOn(nextState);
+              playSwitchSound(nextState);
+            }}
+            className={cn(
+              "relative rounded-full transition-colors duration-200 cursor-pointer pointer-events-auto border border-[#D3D3D3] shadow-[1px_1px_4px_rgba(0,0,0,0.08)]",
+              isOn ? "bg-[#1597F6]" : "bg-[#E5E5E5]"
+            )}
+            style={{
+              width: `${scale * 88}px`,
+              height: `${scale * 44}px`,
+            }}
+          >
+            <div
+              className="absolute bg-white rounded-full transition-all duration-200 shadow-sm"
+              style={{
+                width: `${scale * 40}px`,
+                height: `${scale * 40}px`,
+                top: `${scale * 1}px`,
+                left: isOn ? `${scale * 45}px` : `${scale * 1}px`,
+              }}
+            />
+          </div>
+        );
+
       default:
         return null;
     }
@@ -190,14 +248,14 @@ export function CanvasItem({
         isTextOnly ? "z-20" : "z-10",
         isDragged ? "z-40" : ""
       )}
-      onPointerDown={(e) => onPointerDown(e, element.id)}
-      onPointerMove={(e) => {
+      onPointerDown={isSwitch ? undefined : (e) => onPointerDown(e, element.id)}
+      onPointerMove={isSwitch ? undefined : (e) => {
         handlePointerMove(e);
         onPointerMove(e, element.id);
       }}
-      onPointerUp={(e) => onPointerUp(e, element.id)}
-      onMouseEnter={onMouseEnter}
-      onPointerLeave={handlePointerLeave}
+      onPointerUp={isSwitch ? undefined : (e) => onPointerUp(e, element.id)}
+      onMouseEnter={isSwitch ? undefined : onMouseEnter}
+      onPointerLeave={isSwitch ? undefined : handlePointerLeave}
     >
       <div ref={floatRef} className="will-change-transform">
         <div
@@ -209,7 +267,7 @@ export function CanvasItem({
           style={{ transformStyle: "preserve-3d", perspective: 1000 }}
         >
           {/* Bounding Bounding Selection outline overlays */}
-          {!isTab && (
+          {!isTab && !isSwitch && (
             <SelectionBox
               label={element.label}
               isActive={isHovered || isSelected}
