@@ -104,10 +104,14 @@ export function HeroCanvas() {
     e.stopPropagation();
 
     setSelectedId(id);
-    setDraggedId(id);
 
     const el = elements.find((item) => item.id === id);
     if (!el) return;
+
+    // Tab components are static and not draggable
+    if (el.type === "tab") return;
+
+    setDraggedId(id);
 
     const target = e.currentTarget as HTMLElement;
     target.setPointerCapture(e.pointerId);
