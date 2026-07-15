@@ -209,13 +209,15 @@ export function CanvasItem({
           style={{ transformStyle: "preserve-3d", perspective: 1000 }}
         >
           {/* Bounding Bounding Selection outline overlays */}
-          <SelectionBox
-            label={element.label}
-            isActive={isHovered || isSelected}
-            isSelected={isSelected}
-            color={collaboratorColor}
-            collaboratorName={collaboratorName}
-          />
+          {!isTab && (
+            <SelectionBox
+              label={element.label}
+              isActive={isHovered || isSelected}
+              isSelected={isSelected}
+              color={collaboratorColor}
+              collaboratorName={collaboratorName}
+            />
+          )}
           {renderContent()}
         </div>
       </div>
