@@ -17,7 +17,6 @@ export function HeroCanvas() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([]);
-  const [displacements, setDisplacements] = useState<Record<string, { x: number; y: number }>>({});
   
   // Selection / Hover states (no selection by default)
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -118,6 +117,9 @@ export function HeroCanvas() {
   const handlePointerMove = (e: React.PointerEvent, id: string) => {
     if (draggedId !== id) return;
 
+    const target = e.currentTarget as HTMLElement;
+    target.setPointerCapture(e.pointerId);
+
     const dx = e.clientX - dragStartRef.current.x;
     const dy = e.clientY - dragStartRef.current.y;
 
@@ -132,31 +134,6 @@ export function HeroCanvas() {
     });
 
     setElements(updatedElements);
-
-    const newDisplacements: Record<string, { x: number; y: number }> = {};
-    const threshold = 180;
-    const dragCenterX = newX + 100;
-    const dragCenterY = newY + 50;
-
-    elements.forEach((item) => {
-      if (item.id === id) return;
-
-      const itemCenterX = item.x + 100;
-      const itemCenterY = item.y + 50;
-
-      const deltaX = itemCenterX - dragCenterX;
-      const deltaY = itemCenterY - dragCenterY;
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-      if (distance < threshold) {
-        const force = (threshold - distance) / threshold;
-        const pushX = (deltaX / distance) * force * 45;
-        const pushY = (deltaY / distance) * force * 45;
-        newDisplacements[item.id] = { x: pushX, y: pushY };
-      }
-    });
-
-    setDisplacements(newDisplacements);
   };
 
   const handlePointerUp = (e: React.PointerEvent, id: string) => {
@@ -165,28 +142,6 @@ export function HeroCanvas() {
 
     const target = e.currentTarget as HTMLElement;
     target.releasePointerCapture(e.pointerId);
-
-    const currentDisps = { ...displacements };
-    const springObject = { progress: 1 };
-
-    gsap.to(springObject, {
-      progress: 0,
-      duration: 0.7,
-      ease: "elastic.out(1, 0.4)",
-      onUpdate: () => {
-        const nextDisp: Record<string, { x: number; y: number }> = {};
-        Object.keys(currentDisps).forEach((key) => {
-          nextDisp[key] = {
-            x: currentDisps[key].x * springObject.progress,
-            y: currentDisps[key].y * springObject.progress,
-          };
-        });
-        setDisplacements(nextDisp);
-      },
-      onComplete: () => {
-        setDisplacements({});
-      },
-    });
   };
 
   const handleCanvasClick = () => {
@@ -204,15 +159,12 @@ export function HeroCanvas() {
         <div className="absolute inset-0 pointer-events-none">
           {/* Typography Layer */}
           {elements.map((el) => {
-            const disp = displacements[el.id] || { x: 0, y: 0 };
-
             return (
               <div
                 key={el.id}
                 data-depth={el.depth}
                 className="canvas-word-wrapper absolute pointer-events-none transition-transform duration-75 ease-out will-change-transform"
                 style={{
-                  transform: `translate3d(${disp.x}px, ${disp.y}px, 0)`,
                   left: 0,
                   top: 0,
                 }}
