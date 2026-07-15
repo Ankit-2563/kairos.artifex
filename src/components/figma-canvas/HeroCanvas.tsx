@@ -13,11 +13,18 @@ const initialElementsData = [
   { id: "el-subheading", type: "subheading", x: 437, y: 810, rotation: 0, content: "A digital product studio crafting brands, websites, and experiences that create impact.", label: "subheading", depth: 0.02 },
 ];
 
+const initialCollaborators = [
+  { id: "satyam", name: "Satyam", color: "#904EE1", cursorUrl: "/assets/herosection/purple-cursor.svg" },
+  { id: "ankit", name: "Ankit", color: "#FFC700", cursorUrl: "/assets/herosection/yellow-cursor.svg" },
+  { id: "cyril", name: "Cyril", color: "#F24E1E", cursorUrl: "/assets/herosection/red-cursor.svg" },
+];
+
 export function HeroCanvas() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [isInitialized, setIsInitialized] = useState(false);
   const [elements, setElements] = useState<CanvasElement[]>([]);
+  const [userPointer, setUserPointer] = useState<{ x: number; y: number } | null>(null);
   
   // Selection / Hover states (no selection by default)
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -75,19 +82,13 @@ export function HeroCanvas() {
     if (!isInitialized) return;
 
     const ctx = gsap.context(() => {
-      // Headline Words Animation (fade in & drop/rise with rotation)
       gsap.fromTo(
         ".canvas-word-wrapper",
+        { opacity: 0, y: 40 },
         {
-          y: (i) => (i % 2 === 0 ? -160 : 160),
-          opacity: 0,
-          scale: 0.8,
-        },
-        {
-          y: 0,
           opacity: 1,
-          scale: 1,
-          duration: 1.1,
+          y: 0,
+          duration: 0.8,
           ease: "power4.out",
           stagger: 0.12,
         }
@@ -97,7 +98,49 @@ export function HeroCanvas() {
     return () => ctx.revert();
   }, [isInitialized]);
 
+  // Simulating organic collaborator cursors
+  useEffect(() => {
+    if (!isInitialized) return;
 
+    const startCollaboratorAnimation = (className: string) => {
+      const moveCursor = () => {
+        if (!canvasRef.current) return;
+
+        const rect = canvasRef.current.getBoundingClientRect();
+        const randomX = Math.random() * (rect.width - 200) + 100;
+        const randomY = Math.random() * (rect.height - 150) + 100;
+
+        const duration = Math.random() * 1.8 + 1.2; 
+        const delay = Math.random() * 3 + 0.5; 
+
+        gsap.to(className, {
+          x: randomX,
+          y: randomY,
+          duration: duration,
+          ease: "power3.inOut",
+          delay: delay,
+          onComplete: moveCursor,
+        });
+      };
+
+      moveCursor();
+    };
+
+    initialCollaborators.forEach((col) => {
+      // Set initial random position once to prevent re-render jumps
+      gsap.set(`.col-cursor-${col.id}`, {
+        x: Math.random() * 800 + 100,
+        y: Math.random() * 600 + 100,
+      });
+      startCollaboratorAnimation(`.col-cursor-${col.id}`);
+    });
+
+    return () => {
+      initialCollaborators.forEach((col) => {
+        gsap.killTweensOf(`.col-cursor-${col.id}`);
+      });
+    };
+  }, [isInitialized]);
 
   // Dragging event handlers
   const handlePointerDown = (e: React.PointerEvent, id: string) => {
@@ -150,6 +193,19 @@ export function HeroCanvas() {
     target.releasePointerCapture(e.pointerId);
   };
 
+  const handleCanvasPointerMove = (e: React.PointerEvent) => {
+    if (!canvasRef.current) return;
+    const rect = canvasRef.current.getBoundingClientRect();
+    setUserPointer({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    });
+  };
+
+  const handleCanvasPointerLeave = () => {
+    setUserPointer(null);
+  };
+
   const handleCanvasClick = () => {
     setSelectedId(null);
   };
@@ -158,6 +214,8 @@ export function HeroCanvas() {
     <div
       ref={canvasRef}
       onClick={handleCanvasClick}
+      onPointerMove={handleCanvasPointerMove}
+      onPointerLeave={handleCanvasPointerLeave}
       className="relative w-full min-h-screen overflow-hidden"
       style={{ touchAction: "none", cursor: "url('/assets/herosection/black-cursor.svg') 2 2, auto" }}
     >
@@ -192,6 +250,47 @@ export function HeroCanvas() {
           })}
 
 
+          {/* Collaborator Cursors Layer */}
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {initialCollaborators.map((col) => (
+              <div
+                key={col.id}
+                className={`collaborator-cursor col-cursor-${col.id} absolute top-0 left-0 flex items-start pointer-events-none will-change-transform z-50`}
+                style={{
+                  transform: 'translate3d(100px, 100px, 0)',
+                }}
+              >
+                <img
+                  src={col.cursorUrl}
+                  alt={col.name}
+                  className="w-[28px] h-[27px] select-none"
+                  draggable="false"
+                />
+                <div
+                  className="px-2 py-0.5 rounded-sm text-[11px] font-semibold text-white ml-2 mt-4 shadow-sm select-none font-sans"
+                  style={{ backgroundColor: col.color }}
+                >
+                  {col.name}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Current User Pointer Tag */}
+          {userPointer && (
+            <div
+              className="absolute pointer-events-none select-none z-50 will-change-transform font-sans"
+              style={{
+                transform: `translate3d(${userPointer.x}px, ${userPointer.y}px, 0)`,
+                left: 0,
+                top: 0,
+              }}
+            >
+              <div className="px-2 py-0.5 rounded-sm text-[11px] font-semibold text-white ml-3 mt-4 bg-black shadow-sm">
+                You
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
