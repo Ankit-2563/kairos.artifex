@@ -156,7 +156,7 @@ export function CanvasItem({
       className={cn(
         "absolute transition-shadow duration-200 pointer-events-auto select-none",
         isTextOnly ? "z-20" : "z-10",
-        isDragged ? "z-40 cursor-grabbing" : "cursor-grab"
+        isDragged ? "z-40" : ""
       )}
       onPointerDown={(e) => onPointerDown(e, element.id)}
       onPointerMove={(e) => {
